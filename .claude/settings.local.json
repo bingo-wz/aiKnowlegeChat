@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(java:*)",
+      "Bash(node:*)",
+      "Bash(mysql:*)",
+      "Bash(mvn:*)",
+      "Bash(export:*)",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\":*)",
+      "Bash(/g/JDK/bin/java:*)",
+      "Bash(/g/nodejs/node:*)",
+      "Bash(JAVA_HOME=/g/JDK /g/JDK/bin/java:*)"
     ]
   }
 }

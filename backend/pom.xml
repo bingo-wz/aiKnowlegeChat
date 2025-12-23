@@ -16,7 +16,7 @@
     <artifactId>ai-knowledge-chat</artifactId>
     <version>1.0.0</version>
     <name>AI Knowledge Chat</name>
-    <description>Online Classroom & Research Room with AI Assistant</description>
+    <description>Online Classroom and Research Room with AI Assistant</description>
 
     <properties>
         <java.version>17</java.version>
