@@ -50,19 +50,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, User } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { getClassroomList, createClassroom, type ClassroomDTO } from '@/api/classroom'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const createDialogVisible = ref(false)
-const isTeacher = ref(true) // TODO: 根据用户角色判断
+const loading = ref(false)
 
-const classrooms = ref([
-  { id: 1, name: 'Java 高级编程', teacherName: '张老师', currentMembers: 30, maxMembers: 50, status: 1, coverImage: '' },
-  { id: 2, name: 'Spring Boot 实战', teacherName: '李老师', currentMembers: 25, maxMembers: 40, status: 1, coverImage: '' },
-  { id: 3, name: '数据结构与算法', teacherName: '王老师', currentMembers: 45, maxMembers: 50, status: 1, coverImage: '' }
-])
+const isTeacher = computed(() => userStore.isTeacher())
+
+const classrooms = ref<ClassroomDTO[]>([])
+const pagination = reactive({
+  page: 1,
+  size: 10,
+  total: 0
+})
 
 const form = reactive({
   name: '',
@@ -70,11 +77,26 @@ const form = reactive({
   maxMembers: 50
 })
 
-const getStatusType = (status: number) => {
+const loadClassrooms = async () => {
+  loading.value = true
+  try {
+    const result = await getClassroomList(pagination.page, pagination.size)
+    classrooms.value = result.records
+    pagination.total = result.total
+  } catch (error) {
+    ElMessage.error('加载课堂列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+const getStatusType = (status?: number) => {
+  if (status === undefined) return 'info'
   return status === 1 ? 'success' : status === 0 ? 'info' : 'danger'
 }
 
-const getStatusText = (status: number) => {
+const getStatusText = (status?: number) => {
+  if (status === undefined) return '未知'
   return status === 1 ? '进行中' : status === 0 ? '未开始' : '已结束'
 }
 
@@ -82,10 +104,31 @@ const enterClassroom = (id: number) => {
   router.push(`/classroom/${id}`)
 }
 
-const handleCreate = () => {
-  // TODO: 调用创建课堂接口
-  createDialogVisible.value = false
+const handleCreate = async () => {
+  if (!form.name) {
+    ElMessage.warning('请输入课堂名称')
+    return
+  }
+  try {
+    await createClassroom({
+      name: form.name,
+      description: form.description,
+      maxMembers: form.maxMembers
+    })
+    ElMessage.success('创建成功')
+    createDialogVisible.value = false
+    form.name = ''
+    form.description = ''
+    form.maxMembers = 50
+    await loadClassrooms()
+  } catch (error) {
+    ElMessage.error('创建失败')
+  }
 }
+
+onMounted(() => {
+  loadClassrooms()
+})
 </script>
 
 <style scoped>

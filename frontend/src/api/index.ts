@@ -55,8 +55,8 @@ export const get = <T = any>(url: string, params?: any): Promise<T> => {
   return service.get(url, { params })
 }
 
-export const post = <T = any>(url: string, data?: any): Promise<T> => {
-  return service.post(url, data)
+export const post = <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+  return service.post(url, data, config)
 }
 
 export const put = <T = any>(url: string, data?: any): Promise<T> => {

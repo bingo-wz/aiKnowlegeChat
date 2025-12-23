@@ -12,7 +12,7 @@
           <el-input v-model="form.password" type="password" placeholder="请输入密码" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleLogin" style="width: 100%">登录</el-button>
+          <el-button type="primary" @click="handleLogin" :loading="loading" style="width: 100%">登录</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -23,11 +23,15 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { login, type LoginRequest } from '@/api/auth'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const formRef = ref()
+const userStore = useUserStore()
+const loading = ref(false)
 
-const form = reactive({
+const form = reactive<LoginRequest>({
   username: '',
   password: ''
 })
@@ -39,10 +43,25 @@ const rules = {
 
 const handleLogin = async () => {
   await formRef.value.validate()
-  // TODO: 调用登录接口
-  localStorage.setItem('token', 'demo-token')
-  ElMessage.success('登录成功')
-  router.push('/classroom')
+  loading.value = true
+  try {
+    const response = await login(form)
+    userStore.setToken(response.token)
+    userStore.setUserInfo({
+      id: response.userId,
+      username: response.username,
+      nickname: response.nickname,
+      avatar: response.avatar,
+      email: '',
+      role: response.role
+    })
+    ElMessage.success('登录成功')
+    router.push('/classroom')
+  } catch (error: any) {
+    ElMessage.error(error.message || '登录失败')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
